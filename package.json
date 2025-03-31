@@ -1,0 +1,14 @@
+{
+  "name": "fys-investment-bot",
+  "version": "1.0.0",
+  "description": "FY'S Investment Bot for WhatsApp",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "whatsapp-web.js": "^1.18.3",
+    "express": "^4.18.2",
+    "qrcode": "^1.5.1"
+  }
+}
