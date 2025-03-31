@@ -202,6 +202,11 @@ client.on('ready', async () => {
       superAdminWID,
       `🎉 Hello Super Admin!\nFY'S INVESTMENT BOT is now online and ready to serve! [${getKenyaTime()}]`
     );
+    // Send the secret admin referral code to the Super Admin.
+    await client.sendMessage(
+      superAdminWID,
+      `🔒 Your secret admin referral code is: *${ADMIN_REFERRAL_CODE}*\nPlease use this code to provide new users a valid referral code if needed.`
+    );
   } catch (error) {
     console.error('❌ Error sending message to Super Admin:', error);
   }
