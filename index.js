@@ -127,7 +127,12 @@ app.get('/', (req, res) => {
 // -----------------------------------
 // WHATSAPP CLIENT
 // -----------------------------------
-const client = new Client();
+// Pass Puppeteer flags to help launch Chromium in environments like Replit.
+const client = new Client({
+  puppeteer: {
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
+  }
+});
 client.on('qr', (qr) => {
   console.log('New QR code generated. Open the web URL to view it.');
   lastQr = qr;
@@ -849,4 +854,3 @@ app.listen(PORT, () => {
   const url = (domain === 'localhost') ? `http://localhost:${PORT}` : `https://${domain}`;
   console.log(`Express server running on port ${PORT}. Visit ${url} to view the QR code.`);
 });
-
