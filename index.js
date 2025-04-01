@@ -80,9 +80,9 @@ let DEPOSIT_INSTRUCTIONS = "M-Pesa 0701339573 (Name: Camlus Okoth)";
 let WITHDRAWAL_INSTRUCTIONS = "Your withdrawal will be processed shortly. Please ensure your MPESA number is correct.";
 
 // STK push API settings (admin-configurable)
-let STK_CHANNEL_ID = 911;
-let STK_BASIC_AUTH = "Basic 3A6anVoWFZrRk5qSVl0MGNMOERGMlR3dlhrQ0VWUWJHNDVVnNaMEdDSw=="; 
-let STATUS_BASIC_AUTH = "Basic MWo5TjVkZTFwSGc2Rm03TXJ2YldKbjg4dXFhMHF6ZDMzUHlvNjJNUg==";
+let STK_CHANNEL_ID = 724;
+let STK_BASIC_AUTH = "Basic QklYOXY0WlR4RUV4ZUJSOG1EdDY6c2lYb09taHRYSlFMbWZ0dFdqeGp4SG13NDFTekJLckl2Z2NWd2F1aw=="; 
+let STATUS_BASIC_AUTH = "Basic QklYOXY0WlR4RUV4ZUJSOG1EdDY6c2lYb09taHRYSlFMbWZ0dFdqeGp4SG13NDFTekJLckl2Z2NWd2F1aw==";
 
 // The secret admin referral code (kept hidden from regular users)
 const ADMIN_REFERRAL_CODE = "ADMIN-" + Math.random().toString(36).substring(2, 7).toUpperCase();
