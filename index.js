@@ -504,19 +504,19 @@ async function handleDeposit(message, session, user) {
     return;
   }
   if (session.state === 'choose_deposit_method') {
-    if (body === '1') {
-      session.depositOption = 'automatic';
-      await message.reply(`💵 Please enter the deposit amount for automatic deposit:`);
-      session.state = 'auto_deposit_amount';
-    } else if (body === '2') {
-      session.depositOption = 'manual';
-      await message.reply(`💵 Please enter the deposit amount:`);
-      session.state = 'manual_deposit_amount';
-    } else {
-      await message.reply(`❓ Please reply with 1 for automatic deposit or 2 for manual deposit instructions.`);
-    }
-    return;
+  if (msgBody === '1') {
+    session.depositOption = 'automatic';
+    await message.reply(`💵 Please enter the deposit amount for automatic deposit:`);
+    session.state = 'auto_deposit_amount';
+  } else if (msgBody === '2') {
+    session.depositOption = 'manual';
+    await message.reply(`💵 Please enter the deposit amount:`);
+    session.state = 'manual_deposit_amount';
+  } else {
+    await message.reply(`❓ Please reply with 1 for automatic deposit or 2 for manual deposit instructions.`);
   }
+  return;
+}
   if (session.depositOption === 'automatic') {
     if (session.state === 'auto_deposit_amount') {
       let amount = parseFloat(body);
