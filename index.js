@@ -589,6 +589,103 @@ async function handleDeposit(message, session, user) {
         await message.reply(`❓ Please reply with 1 for automatic deposit or 2 for manual deposit instructions.`);
       }
       return;
+async function handleDeposit(message, session, user) {
+  const body = message.body.trim();
+  // If depositOption is not set, ask the user to choose a deposit method.
+  if (!session.depositOption) {
+    await message.reply(`💵 How would you like to deposit?\nReply with:\n1️⃣ For automatic deposit (STK push)\n2️⃣ For manual deposit instructions`);
+    session.state = 'choose_deposit_method';
+    return;
+  }
+  // Handle the user's choice.
+  if (session.state === 'choose_deposit_method') {
+    if (body === '1') {
+      session.depositOption = 'automatic';
+      await message.reply(`💵 Please enter the deposit amount for automatic deposit:`);
+      session.state = 'auto_deposit_amount';
+    } else if (body === '2') {
+      session.depositOption = 'manual';
+      await message.reply(`💵 Please enter the deposit amount:`);
+      session.state = 'manual_deposit_amount';
+    } else {
+      await message.reply(`❓ Please reply with 1 for automatic deposit or 2 for manual deposit instructions.`);
+    }
+    return;
+  }
+  // Automatic deposit flow.
+  if (session.depositOption === 'automatic') {
+    if (session.state === 'auto_deposit_amount') {
+      let amount = parseFloat(body);
+      if (isNaN(amount) || amount <= 0) {
+        await message.reply(`❌ Please enter a valid deposit amount.`);
+        return;
+      }
+      session.depositAmount = amount;
+      await message.reply(`📱 Please enter the phone number for the STK push (must start with 07 or 01 and be exactly 10 digits):`);
+      session.state = 'auto_deposit_phone';
+      return;
+    }
+    if (session.state === 'auto_deposit_phone') {
+      if (!/^(07|01)[0-9]{8}$/.test(body)) {
+        await message.reply(`❌ Invalid phone number format. Please re-enter a valid 10-digit phone number starting with 07 or 01.`);
+        return;
+      }
+      session.depositPhone = body;
+      try {
+        const stkResponse = await requestSTKPush(session.depositAmount, session.depositPhone);
+        session.depositReference = stkResponse.reference;
+        await message.reply(`🚀 STK push request sent! Please wait while we check your transaction status...`);
+        let attempts = 0;
+        let interval = setInterval(async () => {
+          attempts++;
+          try {
+            const statusResponse = await fetchTransactionStatus(session.depositReference);
+            if (statusResponse.status === "SUCCESS") {
+              clearInterval(interval);
+              user.accountBalance += session.depositAmount;
+              let dep = {
+                amount: session.depositAmount,
+                date: getKenyaTime(),
+                depositID: generateDepositID(),
+                status: "approved",
+                provider_reference: statusResponse.provider_reference || "N/A"
+              };
+              user.deposits.push(dep);
+              saveUsers();
+              await message.reply(`✅ Automatic deposit successful!\nDeposit ID: ${dep.depositID}\nAmount: Ksh ${dep.amount}\nTransaction Code: ${dep.provider_reference}\nYour account has been credited.\nType "00" for the Main Menu.`);
+              notifyAdmins(`🔔 *Automatic Deposit Success:*\nUser: ${user.firstName} ${user.secondName} (Phone: ${user.phone})\nAmount: Ksh ${dep.amount}\nDeposit ID: ${dep.depositID}\nTransaction Code: ${dep.provider_reference}\nDate: ${dep.date}`);
+              session.state = 'awaiting_menu_selection';
+            } else if (attempts >= 4) {
+              clearInterval(interval);
+              await message.reply(`⚠️ STK push not successful. Please try manual deposit.\n${DEPOSIT_INSTRUCTIONS}\nType "00" for the Main Menu.`);
+              session.state = 'awaiting_menu_selection';
+            }
+          } catch (e) {
+            console.error("❌ Error checking deposit status:", e);
+          }
+        }, 5000);
+      } catch (error) {
+        await message.reply(`❌ Automatic deposit request failed. Please try manual deposit.\n${DEPOSIT_INSTRUCTIONS}\nType "00" for the Main Menu.`);
+        session.state = 'awaiting_menu_selection';
+      }
+      return;
+    }
+  }
+  // Manual deposit flow.
+  if (session.depositOption === 'manual') {
+    if (session.state === 'choose_deposit_method') {
+      if (body === '2') {
+        session.depositOption = 'manual';
+        await message.reply(`💵 Please enter the deposit amount:`);
+        session.state = 'manual_deposit_amount';
+      } else if (body === '1') {
+        session.depositOption = 'automatic';
+        await message.reply(`💵 Please enter the deposit amount for automatic deposit:`);
+        session.state = 'auto_deposit_amount';
+      } else {
+        await message.reply(`❓ Please reply with 1 for automatic deposit or 2 for manual deposit instructions.`);
+      }
+      return;
     }
     if (session.state === 'manual_deposit_amount') {
       let amount = parseFloat(body);
@@ -610,6 +707,10 @@ async function handleDeposit(message, session, user) {
       session.state = 'awaiting_menu_selection';
       return;
     }
+  }
+  await message.reply(`❌ Unrecognized deposit state. Returning to Main Menu. Type "00".`);
+  session.state = 'awaiting_menu_selection';
+}
   }
 }
 
